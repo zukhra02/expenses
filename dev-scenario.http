@@ -1,0 +1,14 @@
+GET http://localhost:8080/api/expense
+
+###
+GET http://localhost:8080/api/appointments
+
+###
+POST http://localhost:8080/api/expense
+Content-Type: application/json
+
+{
+  "category": "Food",
+  "status": "OUTCOMING",
+  "balance": 100000
+}
