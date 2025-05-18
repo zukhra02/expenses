@@ -138,9 +138,7 @@ export const Appointments = () => {
                 </Modal.Footer>
             </Modal>
 
-            <div className="text-center mt-4">
-                <Button variant="primary" onClick={fetchAppointments}>Volver</Button>
-            </div>
+
         </div>
     );
 };
