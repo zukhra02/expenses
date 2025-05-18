@@ -5,17 +5,20 @@ import {useMemo} from "react";
 export const TotalByCategory = () => {
     const {total} = useAppSelector(store => store.expensesStore);
 
+
     const series = useMemo(() => {
         if (!total?.totalByCategory) {
             return []
         }
-        
+
         return [{
             name: 'Expense',
             data: Object.values(total?.totalByCategory)
         }];
     }, [total?.totalByCategory])
-    
+
+
+
     const categories = useMemo(() => {
         if (!total?.totalByCategory) {
             return []
@@ -23,6 +26,9 @@ export const TotalByCategory = () => {
         
         return Object.keys(total?.totalByCategory)
     }, [total?.totalByCategory])
+
+
+
 
     // Настройки диаграммы
     const options = useMemo(() => {

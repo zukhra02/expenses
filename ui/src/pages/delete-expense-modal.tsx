@@ -4,6 +4,10 @@ import {deleteExpense, getAllExpenses, getTotal, hideDeleteModal} from "../store
 import {useCallback} from "react";
 
 
+
+
+
+
 export const DeleteExpenseModal = () => {
     const dispatch = useAppDispatch();
     const {showDeleteModal} = useAppSelector(store => store.expensesStore);

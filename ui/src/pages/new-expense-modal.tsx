@@ -15,8 +15,15 @@ export const NewExpenseModal = () => {
     const dispatch = useAppDispatch();
     const { showCreateModal, expenseToCreate } = useAppSelector(store => store.expensesStore);
     
-    const onCreate = useCallback(() => {
+    /*const onCreate = useCallback(() => {
         dispatch(createExpense()).then(res => dispatch(hideCreateModal())).then(res => dispatch(getAllExpenses())).then(res => dispatch(getTotal()))
+    }, [dispatch]);*/
+
+    const onCreate = useCallback(async () => {
+        await dispatch(createExpense());
+        await dispatch(hideCreateModal());
+        await dispatch(getAllExpenses());
+        await dispatch(getTotal());
     }, [dispatch]);
     
     const onChange = useCallback((expense: ExpenseDto) => {

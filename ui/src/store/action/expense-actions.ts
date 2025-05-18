@@ -13,12 +13,15 @@ export const SHOW_EDIT_MODAL_SHOW = "SHOW_EDIT_MODAL_SHOW"
 export const UPDATE_EDIT_EXPENSE = "UPDATE_EDIT_EXPENSE"
 export const GET_TOTAL = "GET_TOTAL"
 
+
 const DEFAULT_TRANSACTION = {
     createdAt: "",
     category: "Work",
     description: "",
-    status: "INCOME",
+    status: "INCOME"
 } as ExpenseDto;
+
+
 
 export const getAllExpenses = () => async (dispatch: AppDispatch) => {
     const response = await fetch("http://localhost:8080/api/expense")
@@ -29,7 +32,8 @@ export const getAllExpenses = () => async (dispatch: AppDispatch) => {
     })
 }
 
-export const createExpense = () => async (dispatch: AppDispatch, getState: any) => {
+
+/*export const createExpense = () => async (dispatch: AppDispatch, getState: any) => {
     const {expensesStore} = getState();
     if (expensesStore?.expenseToCreate) {
         fetch("http://localhost:8080/api/expense", {
@@ -38,7 +42,31 @@ export const createExpense = () => async (dispatch: AppDispatch, getState: any) 
             body: JSON.stringify(expensesStore?.expenseToCreate),
         })
     }
-}
+}*/
+
+
+
+export const createExpense = () => async (dispatch: AppDispatch, getState: any) => {
+    const { expensesStore } = getState();
+    if (expensesStore?.expenseToCreate) {
+        try {
+            const response = await fetch("http://localhost:8080/api/expense", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(expensesStore?.expenseToCreate),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("❌ Error al crear gasto:", response.status, errorText);
+            } else {
+                console.log("✅ Gasto creado correctamente");
+            }
+        } catch (error) {
+            console.error("❌ Error de red o servidor:", error);
+        }
+    }
+};
 
 export const updateExpense = () => async (dispatch: AppDispatch, getState: any) => {
     const {expensesStore} = getState();
@@ -67,6 +95,9 @@ export const deleteExpense = () => async (dispatch: AppDispatch, getState: any) 
     }
 }
 
+
+
+
 export const hideDeleteModal = () => async (dispatch: AppDispatch) => {
     dispatch({
         type: HIDE_DELETE_MODAL_SHOW,
@@ -80,6 +111,8 @@ export const showDeleteModal = (expense: ExpenseDto) => async (dispatch: AppDisp
         payload: { expenseToDelete: expense }
     })
 }
+
+
 
 export const hideCreateModal = () => async (dispatch: AppDispatch) => {
     dispatch({
