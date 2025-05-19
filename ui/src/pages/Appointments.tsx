@@ -1,3 +1,5 @@
+
+import React from "react";
 import { useEffect, useState } from "react";
 import { Calendar, dateFnsLocalizer, Event } from "react-big-calendar";
 import format from "date-fns/format";
@@ -12,47 +14,41 @@ import { AppointmentDto } from "../types/appointment";
 const locales = { es };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
-type ViewType = "month" | "week" | "day" | "agenda";
-
 export const Appointments = () => {
     const [appointments, setAppointments] = useState<AppointmentDto[]>([]);
     const [events, setEvents] = useState<Event[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [editingAppointment, setEditingAppointment] = useState<AppointmentDto | null>(null);
+
     const [formData, setFormData] = useState({
         clientName: "",
         appointmentTime: "",
         description: "",
     });
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [currentView, setCurrentView] = useState<ViewType>("month");
 
     const fetchAppointments = async () => {
         try {
             const citas: AppointmentDto[] = await fetch("http://localhost:8080/api/appointments").then(res => res.json());
-
             setAppointments(citas);
 
             const eventos: Event[] = citas
                 .filter(cita => cita.appointmentDate && cita.appointmentTime)
                 .map(cita => {
-                    try {
-                        const start = new Date(`${cita.appointmentDate}T${cita.appointmentTime}`);
-                        const end = new Date(start.getTime() + 30 * 60000);
+                    const start = new Date(`${cita.appointmentDate}T${cita.appointmentTime}`);
+                    const end = new Date(start.getTime() + 30 * 60000);
+                    const hora = start.toLocaleTimeString("es-ES", {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    });
 
-                        if (isNaN(start.getTime()) || isNaN(end.getTime())) throw new Error("Fecha inválida");
-
-                        return {
-                            title: `${cita.clientName} - ${cita.description}`,
-                            start,
-                            end,
-                        };
-                    } catch (error) {
-                        console.warn("Evento inválido ignorado:", cita);
-                        return null;
-                    }
-                })
-                .filter(Boolean) as Event[];
+                    return {
+                        title: `${hora} - ${cita.clientName} (${cita.description})`,
+                        start,
+                        end,
+                    };
+                });
 
             setEvents(eventos);
         } catch (error) {
@@ -66,7 +62,30 @@ export const Appointments = () => {
 
     const handleSelectSlot = (slotInfo: any) => {
         setSelectedDate(slotInfo.start);
+        setFormData({
+            clientName: "",
+            appointmentTime: "",
+            description: "",
+        });
+        setEditingAppointment(null);
         setShowModal(true);
+    };
+
+    const handleSelectEvent = (event: any) => {
+        const cita = appointments.find(c =>
+            event.title.includes(c.clientName) &&
+            event.start.toISOString().startsWith(c.appointmentDate)
+        );
+        if (cita) {
+            setEditingAppointment(cita);
+            setSelectedDate(new Date(`${cita.appointmentDate}T${cita.appointmentTime}`));
+            setFormData({
+                clientName: cita.clientName,
+                appointmentTime: cita.appointmentTime,
+                description: cita.description,
+            });
+            setShowModal(true);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,58 +93,100 @@ export const Appointments = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSave = async () => {
-        if (!selectedDate) return;
 
-        const formattedDate = selectedDate.toISOString().split("T")[0]; // yyyy-MM-dd
 
-        const newAppointment: AppointmentDto = {
-            id: "",
+
+        const handleSave = async () => {
+            if (!selectedDate) return;
+
+            const formattedDate = selectedDate.toLocaleDateString('sv-SE');
+
+            const newAppointment: AppointmentDto = {
+            id: editingAppointment?.id || "", // Nuevo o existente
             clientName: formData.clientName,
             appointmentDate: formattedDate,
             appointmentTime: formData.appointmentTime,
             description: formData.description,
         };
 
-        await fetch("http://localhost:8080/api/appointments", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newAppointment),
+        if (editingAppointment) {
+            // update
+            await fetch(`http://localhost:8080/api/appointments/${newAppointment.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newAppointment),
+            });
+        } else {
+            // create
+            await fetch("http://localhost:8080/api/appointments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newAppointment),
+            });
+        }
+
+        setShowModal(false);
+        setEditingAppointment(null);
+        fetchAppointments();
+    };
+
+    const handleDelete = async () => {
+        if (!editingAppointment) return;
+
+        await fetch(`http://localhost:8080/api/appointments/${editingAppointment.id}`, {
+            method: "DELETE",
         });
 
         setShowModal(false);
-        setFormData({ clientName: "", appointmentTime: "", description: "" });
+        setEditingAppointment(null);
         fetchAppointments();
     };
+
+    const CustomToolbar = ({ label, onNavigate }: any) => (
+        <div className="d-flex justify-content-between align-items-center mb-3">
+            {/* Botones izquierda */}
+            <div className="d-flex gap-2">
+                <button className="btn btn-primary" onClick={() => onNavigate("TODAY")}>Hoy</button>
+                <button className="btn btn-primary" onClick={() => onNavigate("PREV")}>Anterior</button>
+                <button className="btn btn-primary" onClick={() => onNavigate("NEXT")}>Siguiente</button>
+            </div>
+
+            {/* CENTRO (ocupa 100% y alinea al centro) */}
+            <div className="flex-grow-1 text-center fw-bold fs-5">
+                {label}
+            </div>
+
+            {/* Columna vacía con ancho igual a la izquierda */}
+            <div style={{ width: "150px" }} />
+        </div>
+    );
 
     return (
         <div className="container mt-4">
             <h2>Calendar</h2>
 
             <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                date={currentDate}
+                onNavigate={(newDate) => setCurrentDate(newDate)}
+                view="month"
+                views={["month"]}
+                components={{ toolbar: CustomToolbar }}
+                style={{ height: 800 }}
+                selectable
+                onSelectSlot={handleSelectSlot}
+                onSelectEvent={handleSelectEvent}
+            />
 
-                    localizer={localizer}
-                    events={events}
-                    startAccessor="start"
-                    endAccessor="end"
-                    date={currentDate}
-                    onNavigate={(newDate) => setCurrentDate(newDate)}
-                    view={currentView}
-                    onView={(view) => {
-                    if (["month", "week", "day", "agenda"].includes(view)) {
-                    setCurrentView(view as ViewType);
-                }
-                }}
-                    views={["month", "week", "day", "agenda"]}
-                    style={{ height: 500 }}
-                    selectable
-                    onSelectSlot={handleSelectSlot}
-                    />
-
-
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal show={showModal} onHide={() => {
+                setShowModal(false);
+                setEditingAppointment(null);
+            }}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Nueva cita</Modal.Title>
+                    <Modal.Title>{editingAppointment ? "Editar cita" : "Nueva cita"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
@@ -161,8 +222,18 @@ export const Appointments = () => {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
-                    <Button variant="primary" onClick={handleSave}>Guardar</Button>
+                    {editingAppointment && (
+                        <Button variant="danger" onClick={handleDelete}>Eliminar</Button>
+                    )}
+                    <Button variant="secondary" onClick={() => {
+                        setShowModal(false);
+                        setEditingAppointment(null);
+                    }}>
+                        Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={handleSave}>
+                        Guardar
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </div>

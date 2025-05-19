@@ -1,7 +1,6 @@
 import { Form } from "react-bootstrap";
 import { useState, useEffect } from "react";
-import {ExpenseDto} from "../types/expense";
-import moment from "moment";
+import { ExpenseDto } from "../types/expense";
 
 type NewTransactionFormProps = {
     onChange: (data: ExpenseDto) => void;
@@ -12,7 +11,7 @@ export const TransactionForm = ({ onChange, expense }: NewTransactionFormProps) 
     const [form, setForm] = useState<ExpenseDto>(expense);
 
     useEffect(() => {
-        setForm(expense); // actualiza el form cuando cambian los datos iniciales
+        setForm(expense);
     }, [expense]);
 
     useEffect(() => {
@@ -28,8 +27,8 @@ export const TransactionForm = ({ onChange, expense }: NewTransactionFormProps) 
             parsedValue = parseFloat(value);
         }
 
-        if (name === 'createdAt') {
-            parsedValue = moment(value).toISOString()
+        if (name === "createdAt") {
+            parsedValue = value; // ✅ dejar tal cual para evitar desfase de zona horaria
         }
 
         setForm((prev) => ({
@@ -76,13 +75,12 @@ export const TransactionForm = ({ onChange, expense }: NewTransactionFormProps) 
                 />
             </Form.Group>
 
-            {/* NUEVO CAMPO DE FECHA */}
             <Form.Group className="mb-3">
                 <Form.Label>Date</Form.Label>
                 <Form.Control
                     type="date"
                     name="createdAt"
-                    value={form.createdAt.slice(0, 10)}
+                    value={form.createdAt?.slice(0, 10) || ""}
                     onChange={handleChange}
                 />
             </Form.Group>
@@ -100,4 +98,3 @@ export const TransactionForm = ({ onChange, expense }: NewTransactionFormProps) 
         </Form>
     );
 };
-
