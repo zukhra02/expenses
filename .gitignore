@@ -33,3 +33,17 @@ build/
 ### VS Code ###
 .vscode/
 node_modules/
+
+
+# Evitar subir dependencias y config locales
+node_modules/
+.idea/
+
+# Archivos de logs de finmaster
+finmaster.log
+finmaster-*.log
+
+# Otros comunes
+.env
+dist/
+build/

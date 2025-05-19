@@ -126,7 +126,7 @@ export const Main = () => {
                             <Button className="ms-2" onClick={onCreateModal}>New</Button>
                             <Button className="ms-2" onClick={() => setView("byDate")}>byDate</Button>
                             <Button className="ms-2" onClick={() => setView("byCategory")}>byCategory</Button>
-                            <Button className="ms-2" onClick={() => setView("appointments")}>Citas</Button>
+                            <Button className="ms-2" onClick={() => setView("appointments")}>Appointments</Button>
                         </div>
 
                         <div className="ag-theme-quartz flex-grow-1 my-2">

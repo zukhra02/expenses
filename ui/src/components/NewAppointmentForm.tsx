@@ -1,77 +1,77 @@
-import { useState } from "react";
-import { Button, Form } from "react-bootstrap";
-import { AppointmentDto } from "../types/appointment";
+import React, { useState } from "react";
 
-type Props = {
+export interface AppointmentDto {
+    id: string;
+    clientName: string;
+    appointmentDate: string;
+    appointmentTime: string;
+    description: string;
+}
+
+interface Props {
     onCreate: (appointment: AppointmentDto) => void;
-};
+}
 
-export const NewAppointmentForm = ({ onCreate }: Props) => {
+const NewAppointmentForm: React.FC<Props> = ({ onCreate }) => {
     const [form, setForm] = useState<AppointmentDto>({
         id: "",
-        patientName: "",
-        date: "",
-        time: "",
+        clientName: "",
+        appointmentDate: "",
+        appointmentTime: "",
         description: "",
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        setForm((prevForm) => ({ ...prevForm, [name]: value }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onCreate(form);
-        setForm({ id: "", patientName: "", date: "", time: "", description: "" });
+        setForm({
+            id: "",
+            clientName: "",
+            appointmentDate: "",
+            appointmentTime: "",
+            description: "",
+        });
     };
 
     return (
-        <Form onSubmit={handleSubmit} className="mb-4">
-            <Form.Group className="mb-3">
-                <Form.Label>Patient Name</Form.Label>
-                <Form.Control
-                    type="text"
-                    name="patientName"
-                    value={form.patientName}
-                    onChange={handleChange}
-                    required
-                />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Date</Form.Label>
-                <Form.Control
-                    type="date"
-                    name="date"
-                    value={form.date}
-                    onChange={handleChange}
-                    required
-                />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Time</Form.Label>
-                <Form.Control
-                    type="time"
-                    name="time"
-                    value={form.time}
-                    onChange={handleChange}
-                    required
-                />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Description</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    name="description"
-                    value={form.description}
-                    onChange={handleChange}
-                />
-            </Form.Group>
-
-            <Button type="submit">Add Appointment</Button>
-        </Form>
+        <form onSubmit={handleSubmit}>
+            <input
+                type="text"
+                name="clientName"
+                value={form.clientName}
+                onChange={handleChange}
+                placeholder="Nombre del cliente"
+                required
+            />
+            <input
+                type="date"
+                name="appointmentDate"
+                value={form.appointmentDate}
+                onChange={handleChange}
+                required
+            />
+            <input
+                type="time"
+                name="appointmentTime"
+                value={form.appointmentTime}
+                onChange={handleChange}
+                required
+            />
+            <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Descripción"
+                required
+            />
+            <button type="submit">Crear cita</button>
+        </form>
     );
 };
+
+export default NewAppointmentForm;
