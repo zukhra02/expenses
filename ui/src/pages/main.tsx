@@ -15,7 +15,7 @@ import { EditExpenseModal } from "./edit-expense-modal";
 import { formatExpenseStatus } from "../formatters/formatters";
 import { TotalByCategory } from "../components/total-by-category";
 import { TotalByDate } from "../components/total-by-date";
-import { Appointments } from "./Appointments"; // IMPORT CORRECTO
+import { AppointmentsCalendar } from "./appointments-calendar"; // IMPORT CORRECTO
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -151,7 +151,7 @@ export const Main = () => {
                 </>}
 
                 {view === "appointments" && <>
-                    <Appointments />
+                    <AppointmentsCalendar />
                     <Button onClick={() => setView("main")} className="mt-3">Volver</Button>
                 </>}
             </ZuhraContainer>
