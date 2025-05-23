@@ -1,38 +1,39 @@
 import {Button, Form, Modal, ModalBody, ModalFooter, ModalHeader} from "react-bootstrap";
 import {useAppDispatch, useAppSelector} from "../store/store";
 import {
-    createAppointment,
+    deleteAppointment,
     getAllAppointments,
-    hideCreateModal,
-    updateNewAppointment
+    hideEditModal, saveAppointment, updateAppointment,
 } from "../store/action/appointment-actions";
 import {useCallback} from "react";
 import {useForm} from "react-hook-form";
 import {AppointmentDto} from "../types/appointment";
 
-export const NewAppointmentModal = () => {
+export const EditAppointmentModal = () => {
     const dispatch = useAppDispatch();
-    const {showCreateModal, newAppointment} = useAppSelector(store => store.appointmentsStore);
+    const {showEditModal, appointment} = useAppSelector(store => store.appointmentsStore);
     const {handleSubmit} = useForm({mode: "onChange"})
 
     const onSubmit = useCallback(async () => {
-        const response = await dispatch(createAppointment());
-        if (response?.ok) {
-            await dispatch(getAllAppointments());
-            await dispatch(hideCreateModal())
-        }
+        await dispatch(saveAppointment());
+        await dispatch(getAllAppointments());
     }, [dispatch])
 
     const onChange = useCallback((event: any) => {
-        const { name, value } = event.target
+        const {name, value} = event.target
 
         const obj = {} as AppointmentDto
         // @ts-ignore
         obj[name] = value;
-        dispatch(updateNewAppointment(obj))
+        dispatch(updateAppointment(obj))
+    }, [dispatch])
+
+    const onDelete = useCallback(async () => {
+        await dispatch(deleteAppointment());
+        await dispatch(getAllAppointments());
     }, [dispatch])
     return (
-        <Modal show={showCreateModal} onHide={() => dispatch(hideCreateModal())}>
+        <Modal show={showEditModal} onHide={() => dispatch(hideEditModal())}>
             <ModalHeader closeButton>New Appointment</ModalHeader>
             <ModalBody>
                 <Form>
@@ -44,7 +45,7 @@ export const NewAppointmentModal = () => {
                                 name="description"
                                 placeholder="Description"
                                 onChange={onChange}
-                                value={newAppointment?.description}
+                                value={appointment?.description}
                                 required
                             />
                         </Form.Group>
@@ -56,7 +57,7 @@ export const NewAppointmentModal = () => {
                                 name="clientName"
                                 placeholder="Name"
                                 onChange={onChange}
-                                value={newAppointment?.clientName}
+                                value={appointment?.clientName}
                                 required
                             />
                         </Form.Group>
@@ -67,7 +68,7 @@ export const NewAppointmentModal = () => {
                                 type="date"
                                 name="appointmentDate"
                                 onChange={onChange}
-                                value={newAppointment?.appointmentDate}
+                                value={appointment?.appointmentDate}
                                 required
                             />
                         </Form.Group>
@@ -78,7 +79,7 @@ export const NewAppointmentModal = () => {
                                 type="time"
                                 name="appointmentTime"
                                 onChange={onChange}
-                                value={newAppointment?.appointmentTime}
+                                value={appointment?.appointmentTime}
                                 required
                             />
                         </Form.Group>
@@ -86,8 +87,9 @@ export const NewAppointmentModal = () => {
                 </Form>
             </ModalBody>
             <ModalFooter>
-                <Button variant="secondary" onClick={() => dispatch(hideCreateModal())}>Close</Button>
-                <Button onClick={handleSubmit(onSubmit)}>Create</Button>
+                <Button variant="secondary" onClick={() => dispatch(hideEditModal())}>Close</Button>
+                <Button variant={"danger"} onClick={onDelete}>Delete</Button>
+                <Button onClick={handleSubmit(onSubmit)}>Save</Button>
             </ModalFooter>
         </Modal>
     )
