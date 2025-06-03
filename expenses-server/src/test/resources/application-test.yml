@@ -1,0 +1,22 @@
+server:
+  port: ${APP_PORT:8080}
+
+spring:
+  application:
+    name: expenses-server
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: servlet
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog-master.xml
+    contexts: default
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: ""
+
+
+logging:
+  config: classpath:logback-spring.xml

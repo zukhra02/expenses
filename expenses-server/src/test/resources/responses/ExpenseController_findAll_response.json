@@ -1,0 +1,10 @@
+[
+  {
+    "id": "ff9ce045-7c40-4b52-a912-1c63fdf9e641",
+    "createdAt": "2025-06-03T22:39:52",
+    "category": "TEST",
+    "description": "My Income",
+    "status": "INCOME",
+    "balance": 1E+3
+  }
+]
